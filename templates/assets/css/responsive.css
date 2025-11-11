@@ -1,0 +1,182 @@
+/* MOMO Responsive Design - Mobile First */
+
+/* Base styles are mobile-first */
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+    .header-content {
+        height: 4rem; /* 64px */
+    }
+    
+    .chat-container {
+        height: calc(100vh - 11.25rem); /* Adjust for larger header */
+    }
+    
+    .messages-area {
+        padding-right: var(--space-2);
+        margin-bottom: var(--space-6);
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+    .glass-effect {
+        backdrop-filter: blur(var(--glass-blur));
+    }
+    
+    .modal-content {
+        max-width: 90vw;
+        max-height: 90vh;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .modal-content {
+        max-width: 80vw;
+        max-height: 85vh;
+    }
+    
+    .messages-area {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+    
+    .messages-area::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .messages-area::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .messages-area::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-full);
+    }
+    
+    .messages-area::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .modal-content {
+        max-width: 75vw;
+        max-height: 80vh;
+    }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+    .glass-effect {
+        backdrop-filter: blur(var(--glass-blur-mobile));
+    }
+
+    .modal-content {
+        max-width: 98vw;
+        max-height: 90vh;
+        margin: var(--space-4);
+    }
+    
+    .card {
+        padding: var(--space-3);
+        border-radius: var(--radius-xl);
+    }
+    
+    .card-lg {
+        padding: var(--space-4);
+        border-radius: var(--radius-2xl);
+    }
+    
+    .input-container {
+        padding: var(--space-3);
+        border-radius: var(--radius-xl);
+    }
+    
+    .input-container-lg {
+        padding: var(--space-4);
+        border-radius: var(--radius-2xl);
+    }
+    
+    .btn-primary {
+        padding: var(--space-2) var(--space-3);
+    }
+    
+    .header {
+        padding: 0 var(--space-3);
+    }
+}
+
+/* Dark mode adjustments (if needed in future) */
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles would go here */
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid var(--glass-border);
+    }
+    
+    .status-dot {
+        border: 2px solid var(--text-primary);
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .animate-gradient,
+    .animate-pulse,
+    .animate-pulse-slow,
+    .animate-bounce,
+    .animate-bounce-subtle {
+        animation: none;
+    }
+    
+    .transition-all,
+    .transition-colors,
+    .transition-transform {
+        transition: none;
+    }
+    
+    .hover-scale:hover,
+    .btn-primary:hover {
+        transform: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .glass-effect {
+        background: white;
+        border: 1px solid #ccc;
+        backdrop-filter: none;
+    }
+    
+    .modal-backdrop,
+    .header {
+        display: none !important;
+    }
+    
+    .animate-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        animation: none;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn-ghost,
+    .btn-primary {
+        min-height: 44px; /* Minimum touch target size */
+        min-width: 44px;
+    }
+    
+    .hover-scale:hover,
+    .hover-lift:hover {
+        transform: none;
+    }
+}

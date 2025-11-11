@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeR Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="/static/js/markdown.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s ease-in-out',
+                        'pulse-slow': 'pulse 2.5s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(6px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #161616 100%);
+            color: #f8f9fa;
+            scrollbar-width: thin;
+            scrollbar-color: #495057 #212529;
+        }
+
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background-color: #4a4a4a;
+            border-radius: 20px;
+            border: 3px solid #2a2a2a;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .bottom-bar {
+            background-color: #2a2a2a;
+        }
+
+        .input-area {
+            background-color: #2c2d30;
+        }
+
+        #sideMenu {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            border-radius: 1rem;
+            padding: 0.85rem 1rem;
+            line-height: 1.55;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            overflow-x: auto;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(9, 105, 218, 0.3);
+        }
+
+        .ai-message {
+            background: linear-gradient(135deg, #161b22 0%, #21262d 100%);
+            color: #f8f9fa;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .coder-mode .coder-header {
+            background-color: #1a1a1a;
+        }
+
+        .coder-mode .coder-header-text {
+            color: #E3E3E3;
+        }
+
+        .coder-mode .coder-input-area {
+            background-color: #1a1a1a;
+            border: 1px solid #E3E3E3;
+        }
+
+        .coder-mode .coder-button {
+            background-color: #E3E3E3;
+            color: #1a1a1a;
+        }
+
+        .coder-mode .coder-message-bubble {
+            background-color: #2d2d2d;
+            color: #E3E3E3;
+        }
+
+        .coder-mode .coder-message-bubble.user-message {
+            background-color: #1a1a1a;
+            color: #E3E3E3;
+        }
+
+        .coder-mode .coder-message-bubble.ai-message {
+            background-color: #2d2d2d;
+            color: #E3E3E3;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.12);
+            color: #cbd5f5;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .activity-log {
+            font-size: 0.8rem;
+            color: #9CA3AF;
+        }
+
+        .artifact-block {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 0.85rem;
+        }
+
+        .artifact-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.75rem;
+        }
+
+        .artifact-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .message-bubble iframe,
+        .message-bubble canvas,
+        .message-bubble video,
+        .message-bubble audio {
+            width: 100%;
+            max-width: 640px;
+            border-radius: 0.75rem;
+            margin-top: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .message-bubble iframe {
+            min-height: 320px;
+        }
+
+        .artifact-empty {
+            border: 1px dashed rgba(148, 163, 184, 0.25);
+            border-radius: 0.75rem;
+            padding: 1.2rem;
+            text-align: center;
+            color: #9CA3AF;
+        }
+
+        .task-board-bubble {
+            background: rgba(17, 25, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .task-board {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .task-board-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .task-board-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        .task-board-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f9fafb;
+        }
+
+        .task-board-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 999px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+        }
+
+        .task-board-status.status-running {
+            background: rgba(59, 130, 246, 0.18);
+            color: #bfdbfe;
+        }
+
+        .task-board-status.status-success {
+            background: rgba(34, 197, 94, 0.18);
+            color: #bbf7d0;
+        }
+
+        .task-board-status.status-failed {
+            background: rgba(248, 113, 113, 0.18);
+            color: #fecaca;
+        }
+
+        .task-board-status.status-skipped {
+            background: rgba(148, 163, 184, 0.15);
+            color: #cbd5f5;
+        }
+
+        .task-board-summary {
+            font-size: 0.85rem;
+            color: #cbd5f5;
+            background: rgba(148, 163, 184, 0.08);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            display: none;
+        }
+
+        .task-board-summary.visible {
+            display: block;
+        }
+
+        .task-board-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .task-step {
+            border-radius: 0.9rem;
+            padding: 0.9rem 1rem;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .task-step[data-status="pending"] {
+            border-left: 3px solid rgba(148, 163, 184, 0.5);
+        }
+
+        .task-step[data-status="running"] {
+            border-left: 3px solid rgba(59, 130, 246, 0.6);
+            background: rgba(37, 45, 68, 0.85);
+        }
+
+        .task-step[data-status="success"] {
+            border-left: 3px solid rgba(16, 185, 129, 0.7);
+        }
+
+        .task-step[data-status="failed"] {
+            border-left: 3px solid rgba(248, 113, 113, 0.8);
+        }
+
+        .task-step-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .task-step-index {
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .task-step-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-step-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 0.15rem;
+        }
+
+        .task-step-subtitle {
+            font-size: 0.75rem;
+            color: rgba(148, 163, 184, 0.9);
+        }
+
+        .task-step-status {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.18);
+            color: #cbd5f5;
+            white-space: nowrap;
+        }
+
+        .task-step-status.status-running {
+            background: rgba(59, 130, 246, 0.25);
+            color: #bfdbfe;
+        }
+
+        .task-step-status.status-success {
+            background: rgba(34, 197, 94, 0.25);
+            color: #bbf7d0;
+        }
+
+        .task-step-status.status-failed {
+            background: rgba(248, 113, 113, 0.25);
+            color: #fecaca;
+        }
+
+        .task-step-log {
+            margin-top: 0.75rem;
+            padding-left: 1.5rem;
+            list-style: disc;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            color: #cbd5f5;
+            font-size: 0.8rem;
+        }
+
+        .task-step-log li.task-log-error {
+            color: #fca5a5;
+        }
+
+        .task-step-log li.task-log-success {
+            color: #a7f3d0;
+        }
+
+        .artifact-actions button {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .artifact-actions button:hover {
+            transform: translateY(-2px);
+        }
+
+        .artifact-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            backdrop-filter: blur(6px);
+        }
+
+        .artifact-modal.active {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 40;
+        }
+
+        .modal-content {
+            background-color: #2c2d30;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
+            max-width: 90%;
+            width: 560px;
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            border: 3px solid rgba(148, 163, 184, 0.35);
+            border-top-color: #E3E3E3;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-bubble {
+            padding: 1rem;
+        }
+
+        .processing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .processing-dots {
+            display: inline-flex;
+            gap: 0.35rem;
+        }
+
+        .processing-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #60a5fa, #a855f7);
+            opacity: 0.3;
+            animation: processingDot 1.2s infinite ease-in-out;
+        }
+
+        .processing-dots span:nth-child(2) { animation-delay: 0.15s; }
+        .processing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes processingDot {
+            0%, 60%, 100% {
+                transform: translateY(0) scale(0.75);
+                opacity: 0.35;
+            }
+            30% {
+                transform: translateY(-6px) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .assistant-body {
+            color: rgba(226, 232, 240, 0.92);
+            line-height: 1.7;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .assistant-paragraph {
+            margin: 0;
+        }
+
+        .assistant-strong {
+            color: #facc15;
+            font-weight: 700;
+        }
+
+        .assistant-em {
+            color: #cbd5f5;
+        }
+
+        .assistant-code {
+            background: rgba(15, 23, 42, 0.85);
+            color: #f8fafc;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: "Fira Code", "JetBrains Mono", monospace;
+            font-size: 0.85em;
+        }
+
+        .assistant-body pre {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+        }
+
+        .assistant-body pre code {
+            color: #e2e8f0;
+            font-family: "Fira Code", "JetBrains Mono", monospace;
+            font-size: 0.85rem;
+        }
+
+        .assistant-quote {
+            border-left: 3px solid rgba(99, 102, 241, 0.45);
+            padding-left: 14px;
+            color: rgba(226, 232, 240, 0.85);
+            font-style: italic;
+        }
+
+        .assistant-list {
+            margin: 0;
+            padding-left: 1.2rem;
+            display: grid;
+            gap: 0.4rem;
+        }
+
+        .assistant-list.ordered {
+            list-style: decimal;
+        }
+
+        .assistant-list:not(.ordered) {
+            list-style: disc;
+        }
+
+        .assistant-list-item::marker {
+            color: rgba(129, 140, 248, 0.85);
+        }
+
+        .assistant-table-wrapper {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .assistant-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .assistant-table th,
+        .assistant-table td {
+            padding: 0.65rem 0.9rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            text-align: left;
+        }
+
+        .assistant-table thead {
+            background: rgba(99, 102, 241, 0.15);
+            color: #e0e7ff;
+        }
+
+        .assistant-highlight {
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.25), rgba(59, 130, 246, 0.15));
+            padding: 0 4px;
+            border-radius: 6px;
+        }
+
+        .assistant-artifact {
+            margin-top: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(15, 23, 42, 0.65);
+            box-shadow: 0 22px 45px rgba(2, 6, 23, 0.45);
+            overflow: hidden;
+        }
+
+        .assistant-artifact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 1rem 1.15rem 0.75rem;
+        }
+
+        .assistant-artifact-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .assistant-artifact-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f9fafb;
+        }
+
+        .assistant-artifact-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: rgba(129, 140, 248, 0.2);
+            color: #c7d2fe;
+        }
+
+        .assistant-artifact-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .assistant-artifact-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(30, 41, 59, 0.65);
+            color: #e2e8f0;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .assistant-artifact-button:hover {
+            transform: translateY(-1px);
+            background: rgba(59, 130, 246, 0.18);
+        }
+
+        .assistant-artifact-body {
+            padding: 0 1.15rem 1.1rem;
+        }
+
+        .assistant-artifact-description {
+            font-size: 0.85rem;
+            color: rgba(203, 213, 225, 0.88);
+            margin-bottom: 0.85rem;
+        }
+
+        .assistant-artifact-viewer {
+            position: relative;
+            border-radius: 0.9rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(15, 23, 42, 0.75);
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .assistant-artifact-viewer iframe,
+        .assistant-artifact-viewer .assistant-artifact-html {
+            width: 100%;
+            border: none;
+        }
+
+        .assistant-artifact-viewer iframe {
+            min-height: 320px;
+        }
+
+        .assistant-artifact-viewer.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
+        }
+
+        .assistant-artifact-viewer.expanded {
+            max-height: 680px;
+            padding: 0.85rem;
+        }
+
+        .assistant-artifact-toggle[data-state="collapsed"] .assistant-artifact-toggle-label::after {
+            content: 'Expandir';
+        }
+
+        .assistant-artifact-toggle[data-state="expanded"] .assistant-artifact-toggle-label::after {
+            content: 'Recolher';
+        }
+
+
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+
+    <header id="chatHeader" class="p-4 md:px-8 flex justify-center items-center z-10 bg-transparent">
+        <div id="headerTitle" class="text-2xl font-semibold">
+            <span class="text-white">CodeR</span>
+        </div>
+    </header>
+
+    <main class="main-content px-4 md:px-10 pb-6 flex flex-col items-center">
+        <div id="chatMessages" class="w-full max-w-3xl flex flex-col gap-4 pb-16">
+            <div id="welcomeMessage" class="flex flex-col items-center text-center mt-10">
+                <span class="status-pill mb-4">CodeR Online</span>
+                <h1 class="text-4xl md:text-5xl font-semibold text-white">Olá, vamos começar</h1>
+                <p class="mt-4 text-gray-400 max-w-lg">Eu sou o CodeR. Compartilhe em detalhes o que você precisa e acompanhe minha linha de raciocínio completa, com artefatos e histórico organizados.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer id="chatFooter" class="bottom-bar p-4 md:p-6">
+        <div class="max-w-3xl mx-auto">
+            <form id="messageForm" class="input-area rounded-3xl px-4 py-3 flex items-end gap-3 border border-white/5">
+                <button type="button" class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50" title="Adicionar arquivo" onclick="attachFile()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+                <input id="fileInput" type="file" class="hidden" multiple accept=".txt,.csv,.json,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,image/*" />
+                <textarea id="messageInput" placeholder="Digite aqui sua solicitação" rows="1" class="bg-transparent flex-1 resize-none focus:outline-none text-gray-200 placeholder-gray-500 text-base leading-relaxed max-h-36"></textarea>
+                <button id="sendButton" type="submit" class="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="Enviar mensagem">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </form>
+            <div id="attachmentContainer" class="max-w-3xl mx-auto mt-3 hidden">
+                <div class="bg-white/5 border border-white/10 rounded-3xl px-4 py-3">
+                    <div id="attachmentList" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+
+    <div id="artifact-modal" class="artifact-modal">
+        <div class="artifact-content w-full max-w-3xl mx-4">
+            <div class="artifact-header">
+                <h3 id="modal-title" class="text-lg font-semibold">Visualização</h3>
+                <button onclick="closeArtifactModal()" class="text-white hover:text-gray-200 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6"/><path d="M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6 text-gray-100 text-sm">
+                Carregando artefato...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.marked) {
+            window.marked.setOptions({ gfm: true, breaks: true });
+        }
+
+        const body = document.body;
+
+        const header = document.getElementById('chatHeader');
+        const footer = document.getElementById('chatFooter');
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const fileInput = document.getElementById('fileInput');
+        const attachmentContainer = document.getElementById('attachmentContainer');
+        const attachmentList = document.getElementById('attachmentList');
+        const chatMessages = document.getElementById('chatMessages');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const artifactListEl = document.getElementById('artifact-list');
+        const artifactEmptyEl = document.getElementById('artifact-empty');
+        const clearArtifactsBtn = document.getElementById('clearArtifacts');
+        const activityLogEl = document.getElementById('activity-log');
+
+       const pipelineStatusEl = document.getElementById('pipeline-status');
+       const tasksCounterEl = document.getElementById('tasks-counter');
+       const lastActivityEl = document.getElementById('last-activity');
+       const statusIndicatorEl = document.getElementById('status-indicator');
+        const statusTextEl = document.getElementById('status-text');
+
+        let isLoading = false;
+        let currentEventSource = null;
+        let responseReceived = false;
+        let activeTasks = 0;
+        let taskInProgress = false;
+        let attachments = [];
+        const renderedArtifactEmbeds = new Set();
+        const taskBoards = new Map();
+        const taskStatusLabels = {
+            pending: 'Pendente',
+            running: 'Em execução',
+            success: 'Concluído',
+            failed: 'Falhou',
+            skipped: 'Ignorado'
+        };
+
+        const artifactRegistry = new Map();
+
+        function generateAttachmentId() {
+            return `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        function formatBytes(bytes) {
+            if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+            const value = bytes / Math.pow(1024, index);
+            return `${index === 0 ? Math.round(value) : value.toFixed(1)} ${units[index]}`;
+        }
+
+        function removeAttachment(id) {
+            attachments = attachments.filter(att => att.id !== id);
+            updateAttachmentPreview();
+            updateSendButton();
+        }
+
+        function updateAttachmentPreview() {
+            if (!attachmentContainer || !attachmentList) return;
+            attachmentList.innerHTML = '';
+
+            if (!attachments.length) {
+                attachmentContainer.classList.add('hidden');
+                return;
+            }
+
+            attachmentContainer.classList.remove('hidden');
+
+            attachments.forEach(att => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2 bg-white/10 text-gray-100 rounded-full px-3 py-1 text-sm';
+
+                const icon = document.createElement('span');
+                icon.textContent = att.status === 'error' ? '⚠️' : '📎';
+                item.appendChild(icon);
+
+                const label = document.createElement('span');
+                let labelText = `${att.displayName} • ${formatBytes(att.size)}`;
+                if (att.status === 'uploading') {
+                    labelText += ' (enviando...)';
+                } else if (att.status === 'error') {
+                    labelText += ' (erro)';
+                }
+                label.textContent = labelText;
+                if (att.error) {
+                    label.title = att.error;
+                }
+                item.appendChild(label);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'text-gray-300 hover:text-white text-lg leading-none';
+                removeBtn.textContent = '×';
+                removeBtn.setAttribute('aria-label', 'Remover arquivo');
+                if (att.status === 'uploading') {
+                    removeBtn.disabled = true;
+                    removeBtn.classList.add('opacity-40', 'cursor-not-allowed');
+                } else {
+                    removeBtn.addEventListener('click', () => removeAttachment(att.id));
+                }
+                item.appendChild(removeBtn);
+
+                attachmentList.appendChild(item);
+            });
+        }
+
+        async function uploadAttachment(file) {
+            const attachment = {
+                id: generateAttachmentId(),
+                displayName: file.name,
+                size: file.size,
+                status: 'uploading',
+                upload: null,
+                error: null
+            };
+
+            attachments.push(attachment);
+            updateAttachmentPreview();
+            updateSendButton();
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Falha no upload (${response.status})`);
+                }
+
+                const data = await response.json();
+                if (!data || data.success === false) {
+                    const errorMessage = (data && data.error) ? data.error : 'Erro ao processar o arquivo';
+                    throw new Error(errorMessage);
+                }
+
+                attachment.status = 'ready';
+                attachment.upload = data;
+                recordActivity('Arquivo anexado');
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                attachment.status = 'error';
+                attachment.error = error.message || 'Falha no upload';
+                recordActivity('Falha no upload de arquivo');
+            } finally {
+                updateAttachmentPreview();
+                updateSendButton();
+            }
+        }
+
+        function handleFileSelection(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) {
+                return;
+            }
+
+            for (const file of files) {
+                uploadAttachment(file);
+            }
+
+            fileInput.value = '';
+        }
+
+        function setBoardStatus(entry, status, label) {
+            if (!entry) return;
+            entry.status = status;
+            entry.statusChip.className = `task-board-status status-${status}`;
+            const defaultLabels = {
+                pending: 'Plano pendente',
+                running: 'Plano em execução',
+                success: 'Plano concluído',
+                failed: 'Plano com falhas',
+                skipped: 'Plano não necessário'
+            };
+            entry.statusChip.textContent = label || defaultLabels[status] || status;
+        }
+
+        function updateBoardProgress(entry) {
+            if (!entry || entry.totalSteps <= 0 || entry.status !== 'running') return;
+            entry.statusChip.textContent = `${entry.completedSteps}/${entry.totalSteps} passos concluídos`;
+        }
+
+        function appendStepLog(stepEntry, message, variant = 'info', attempt = null) {
+            if (!stepEntry || !message) return;
+            const item = document.createElement('li');
+            if (variant === 'error') {
+                item.classList.add('task-log-error');
+            } else if (variant === 'success') {
+                item.classList.add('task-log-success');
+            }
+            if (attempt !== null && attempt !== undefined && attempt > 0) {
+                item.textContent = `Tentativa ${attempt}: ${message}`;
+            } else {
+                item.textContent = message;
+            }
+            stepEntry.logList.appendChild(item);
+        }
+
+        function setStepStatus(stepEntry, status, label) {
+            if (!stepEntry) return;
+            stepEntry.status = status;
+            stepEntry.element.dataset.status = status;
+            stepEntry.statusBadge.className = `task-step-status status-${status}`;
+            stepEntry.statusBadge.textContent = label || taskStatusLabels[status] || status;
+        }
+
+        function createStepElement(entry, step) {
+            const stepId = step?.id || `step_${(step?.index ?? entry.steps.size) + 1}`;
+            const displayIndex = (step?.index ?? entry.steps.size) + 1;
+
+            const stepEl = document.createElement('div');
+            stepEl.className = 'task-step';
+            stepEl.dataset.status = 'pending';
+
+            const headerEl = document.createElement('div');
+            headerEl.className = 'task-step-header';
+
+            const indexBadge = document.createElement('span');
+            indexBadge.className = 'task-step-index';
+            indexBadge.textContent = String(displayIndex);
+
+            const infoWrap = document.createElement('div');
+            infoWrap.className = 'task-step-info';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'task-step-title';
+            titleEl.textContent = step?.summary || `Executar ${step?.tool || 'passo'}`;
+
+            infoWrap.appendChild(titleEl);
+
+            const subtitleText = step?.tool ? `Ferramenta: ${step.tool}` : (step?.query ? step.query.slice(0, 80) : '');
+            if (subtitleText) {
+                const subtitleEl = document.createElement('div');
+                subtitleEl.className = 'task-step-subtitle';
+                subtitleEl.textContent = subtitleText;
+                infoWrap.appendChild(subtitleEl);
+            }
+
+            const statusBadge = document.createElement('span');
+            statusBadge.className = 'task-step-status status-pending';
+            statusBadge.textContent = taskStatusLabels.pending;
+
+            headerEl.appendChild(indexBadge);
+            headerEl.appendChild(infoWrap);
+            headerEl.appendChild(statusBadge);
+
+            const logList = document.createElement('ul');
+            logList.className = 'task-step-log';
+
+            stepEl.appendChild(headerEl);
+            stepEl.appendChild(logList);
+
+            const stepEntry = {
+                id: stepId,
+                element: stepEl,
+                statusBadge,
+                logList,
+                status: 'pending',
+                completed: false,
+                index: step?.index ?? entry.steps.size
+            };
+
+            entry.steps.set(stepId, stepEntry);
+            entry.stepsContainer.appendChild(stepEl);
+
+            return stepEntry;
+        }
+
+        function ensureTaskBoard(event) {
+            const planId = event?.plan_id || event?.planId;
+            if (!planId) return null;
+
+            if (taskBoards.has(planId)) {
+                const existing = taskBoards.get(planId);
+                if (event?.title) {
+                    existing.titleEl.textContent = event.title;
+                }
+                if (Array.isArray(event?.steps) && event.steps.length > 0 && existing.steps.size === 0) {
+                    existing.totalSteps = event.steps.length;
+                    event.steps.forEach(step => createStepElement(existing, step));
+                }
+                return existing;
+            }
+
+            const wrapper = addMessage('', 'assistant');
+            const bubble = wrapper.querySelector('.message-bubble');
+            bubble.classList.add('task-board-bubble');
+
+            const boardEl = document.createElement('div');
+            boardEl.className = 'task-board';
+
+            const headerEl = document.createElement('div');
+            headerEl.className = 'task-board-header';
+
+            const titleWrap = document.createElement('div');
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'task-board-label';
+            labelEl.textContent = 'Plano de Execução';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'task-board-title';
+            titleEl.textContent = event?.title || 'Plano em execução';
+
+            titleWrap.appendChild(labelEl);
+            titleWrap.appendChild(titleEl);
+
+            const statusChip = document.createElement('span');
+            statusChip.className = 'task-board-status status-running';
+            statusChip.textContent = 'Plano em execução';
+
+            headerEl.appendChild(titleWrap);
+            headerEl.appendChild(statusChip);
+
+            const summaryEl = document.createElement('div');
+            summaryEl.className = 'task-board-summary';
+
+            const stepsContainer = document.createElement('div');
+            stepsContainer.className = 'task-board-steps';
+
+            boardEl.appendChild(headerEl);
+            boardEl.appendChild(summaryEl);
+            boardEl.appendChild(stepsContainer);
+
+            bubble.innerHTML = '';
+            bubble.appendChild(boardEl);
+
+            const entry = {
+                planId,
+                wrapper,
+                bubble,
+                boardEl,
+                headerEl,
+                labelEl,
+                titleEl,
+                statusChip,
+                summaryEl,
+                stepsContainer,
+                steps: new Map(),
+                totalSteps: Array.isArray(event?.steps) ? event.steps.length : 0,
+                completedSteps: 0,
+                failed: false,
+                status: 'running',
+                requestId: event?.request_id || event?.requestId || null
+            };
+
+            taskBoards.set(planId, entry);
+
+            if (Array.isArray(event?.steps) && event.steps.length > 0) {
+                event.steps.forEach(step => createStepElement(entry, step));
+            }
+
+            if (entry.totalSteps > 0) {
+                updateBoardProgress(entry);
+            }
+
+            if (entry.totalSteps === 0 || event?.status === 'skipped') {
+                entry.totalSteps = Array.isArray(event?.steps) ? event.steps.length : 0;
+                entry.summaryEl.textContent = 'Nenhum plano foi necessário para esta solicitação. A resposta será processada diretamente.';
+                entry.summaryEl.classList.add('visible');
+                setBoardStatus(entry, 'skipped', 'Plano não necessário');
+            } else {
+                setBoardStatus(entry, 'running');
+            }
+
+            return entry;
+        }
+
+        function handlePlanEvent(event) {
+            const entry = ensureTaskBoard(event);
+            if (!entry) return;
+
+            if (Array.isArray(event.steps) && event.steps.length > 0 && entry.steps.size === 0) {
+                entry.totalSteps = event.steps.length;
+                event.steps.forEach(step => createStepElement(entry, step));
+            }
+
+            if (typeof event.total_steps === 'number') {
+                entry.totalSteps = event.total_steps;
+            }
+
+            if (event.status === 'skipped') {
+                setBoardStatus(entry, 'skipped', 'Plano não necessário');
+                if (event.summary) {
+                    entry.summaryEl.textContent = event.summary;
+                    entry.summaryEl.classList.add('visible');
+                }
+            } else if (entry.status !== 'running') {
+                setBoardStatus(entry, 'running');
+            }
+
+            if (event.title) {
+                entry.titleEl.textContent = event.title;
+            }
+
+            if (entry.totalSteps > 0) {
+                updateBoardProgress(entry);
+            }
+        }
+
+        function handlePlanStepEvent(event) {
+            const entry = ensureTaskBoard(event);
+            if (!entry) return;
+
+            const stepId = event?.step_id || event?.stepId || `step_${(event?.index ?? entry.steps.size) + 1}`;
+            let stepEntry = entry.steps.get(stepId);
+
+            if (!stepEntry) {
+                const fallbackStep = {
+                    id: stepId,
+                    index: event?.index ?? entry.steps.size,
+                    tool: event?.tool,
+                    summary: event?.label || `Passo ${ (event?.index ?? entry.steps.size) + 1 }`
+                };
+                stepEntry = createStepElement(entry, fallbackStep);
+                if (entry.totalSteps === 0) {
+                    entry.totalSteps = entry.steps.size;
+                }
+            }
+
+            if (event.type === 'plan_step_started') {
+                setStepStatus(stepEntry, 'running', taskStatusLabels.running);
+                const startMessage = event?.message || `Executando ${event?.tool || 'passo'}`;
+                appendStepLog(stepEntry, startMessage, 'info');
+                if (entry.status !== 'running') {
+                    setBoardStatus(entry, 'running');
+                }
+                updateBoardProgress(entry);
+                return;
+            }
+
+            if (event.type === 'plan_step_retry') {
+                setStepStatus(stepEntry, 'running', taskStatusLabels.running);
+                const variant = event.status === 'error' ? 'error' : (event.status === 'success' ? 'success' : 'info');
+                const retryMessage = event?.message || (event.status === 'error' ? 'Erro detectado' : 'Reprocessando passo');
+                appendStepLog(stepEntry, retryMessage, variant, event?.attempt ?? null);
+                updateBoardProgress(entry);
+                return;
+            }
+
+            if (event.type === 'plan_step_completed') {
+                if (!stepEntry.completed) {
+                    entry.completedSteps += 1;
+                    stepEntry.completed = true;
+                }
+                setStepStatus(stepEntry, 'success', taskStatusLabels.success);
+                appendStepLog(stepEntry, event?.result_summary || event?.verification || 'Passo concluído', 'success');
+                updateBoardProgress(entry);
+                return;
+            }
+
+            if (event.type === 'plan_step_failed') {
+                setStepStatus(stepEntry, 'failed', taskStatusLabels.failed);
+                appendStepLog(stepEntry, event?.message || 'Falha no passo', 'error');
+                entry.failed = true;
+                setBoardStatus(entry, 'failed', 'Plano com falhas');
+                if (event?.message) {
+                    entry.summaryEl.textContent = event.message;
+                    entry.summaryEl.classList.add('visible');
+                }
+                return;
+            }
+        }
+
+        function handlePlanCompleted(event) {
+            const entry = ensureTaskBoard(event);
+            if (!entry) return;
+
+            const status = event?.status || 'completed';
+
+            if (typeof event.total_steps === 'number') {
+                entry.totalSteps = event.total_steps;
+            }
+
+            if (typeof event.completed_steps === 'number') {
+                entry.completedSteps = event.completed_steps;
+            }
+
+            if (status === 'completed') {
+                setBoardStatus(entry, 'success', 'Plano concluído');
+            } else if (status === 'failed') {
+                setBoardStatus(entry, 'failed', 'Plano com falhas');
+                entry.failed = true;
+            } else if (status === 'skipped') {
+                setBoardStatus(entry, 'skipped', 'Plano não necessário');
+            } else {
+                setBoardStatus(entry, status, taskStatusLabels[status] || status);
+            }
+
+            if (event?.summary) {
+                entry.summaryEl.textContent = event.summary;
+                entry.summaryEl.classList.add('visible');
+            }
+
+            if (Array.isArray(event?.execution_log) && event.execution_log.length > 0 && !entry.summaryEl.textContent) {
+                entry.summaryEl.textContent = event.execution_log[event.execution_log.length - 1];
+                entry.summaryEl.classList.add('visible');
+            }
+        }
+
+
+
+
+
+        function updatePipelineStatus(text) {
+            if (pipelineStatusEl && text) {
+                pipelineStatusEl.textContent = text;
+            }
+        }
+
+        function updateTasksCounter() {
+            if (tasksCounterEl) {
+                tasksCounterEl.textContent = activeTasks === 1 ? '1 tarefa' : `${activeTasks} tarefas`;
+            }
+        }
+
+        function recordActivity(source) {
+            if (!lastActivityEl || !activityLogEl || !source) return;
+            const now = new Date();
+            const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            lastActivityEl.textContent = `${source} · ${time}`;
+            activityLogEl.textContent = `${source} às ${time}`;
+        }
+
+        function showTaskPulse(show) {
+            const pulse = document.getElementById('task-pulse');
+            if (!pulse) return;
+            pulse.classList.toggle('hidden', !show);
+        }
+
+        function startTask(label) {
+            taskInProgress = true;
+            activeTasks = Math.max(activeTasks, 1);
+            updateTasksCounter();
+            updatePipelineStatus(label || 'Processando solicitação...');
+            showTaskPulse(true);
+            recordActivity('Pipeline iniciado');
+        }
+
+        function completeTask(message) {
+            taskInProgress = false;
+            activeTasks = 0;
+            updateTasksCounter();
+            updatePipelineStatus(message || 'Pronto para novas solicitações');
+            showTaskPulse(false);
+            recordActivity('Pipeline concluído');
+        }
+
+        function updateArtifactEmptyState() {
+            if (!artifactEmptyEl) return;
+            artifactEmptyEl.style.display = artifactRegistry.size > 0 ? 'none' : '';
+        }
+
+        function buildArtifactCard(artifact) {
+            const item = document.createElement('div');
+            item.className = 'artifact-item animate-fade-in';
+
+            const titleRow = document.createElement('div');
+            titleRow.className = 'flex items-center justify-between gap-3';
+
+            const title = document.createElement('h4');
+            title.className = 'text-sm font-semibold text-gray-100 truncate';
+            title.textContent = artifact.title || artifact.filename;
+
+            const type = document.createElement('span');
+            type.className = 'text-[0.65rem] uppercase tracking-[0.2em] text-gray-400';
+            type.textContent = (artifact.file_type || artifact.type || 'artefato').toString();
+
+            titleRow.appendChild(title);
+            titleRow.appendChild(type);
+
+            const description = document.createElement('p');
+            description.className = 'text-xs text-gray-400';
+            description.textContent = artifact.description || artifact.summary || 'Artefato gerado automaticamente durante o processamento.';
+
+            const actions = document.createElement('div');
+            actions.className = 'artifact-actions flex items-center gap-2 text-xs';
+
+            const viewButton = document.createElement('button');
+            viewButton.type = 'button';
+            viewButton.className = 'px-3 py-1.5 rounded-full bg-white/20 text-white hover:bg-white/30';
+            viewButton.textContent = 'Visualizar';
+            viewButton.addEventListener('click', () => openArtifact(artifact.filename, artifact.title || artifact.filename));
+
+            const copyButton = document.createElement('button');
+            copyButton.type = 'button';
+            copyButton.className = 'px-3 py-1.5 rounded-full bg-white/10 text-gray-200 hover:bg-white/20';
+            copyButton.textContent = 'Copiar link';
+            copyButton.addEventListener('click', () => copyArtifactReference(artifact.filename));
+
+            actions.appendChild(viewButton);
+            actions.appendChild(copyButton);
+
+            item.appendChild(titleRow);
+            item.appendChild(description);
+            item.appendChild(actions);
+
+            setTimeout(() => item.classList.remove('animate-fade-in'), 400);
+            return item;
+        }
+
+        function renderArtifactPanelItem(artifact) {
+            if (!artifactListEl || !artifact || !artifact.filename) return;
+            updateArtifactEmptyState();
+
+            const newCard = buildArtifactCard(artifact);
+            const existing = artifactRegistry.get(artifact.filename);
+
+            if (existing) {
+                artifactListEl.replaceChild(newCard, existing);
+            } else {
+                artifactListEl.prepend(newCard);
+            }
+
+            artifactRegistry.set(artifact.filename, newCard);
+        }
+
+        function copyArtifactReference(filename) {
+            if (!filename || !navigator.clipboard) return;
+            const url = `${window.location.origin}/downloads/${filename}`;
+            navigator.clipboard.writeText(url).then(() => {
+                updatePipelineStatus('Link do artefato copiado para a área de transferência');
+                recordActivity('Link copiado');
+            }).catch((error) => console.error('Erro ao copiar link', error));
+        }
+
+        function updateSendButton() {
+            const hasText = messageInput.value.trim().length > 0;
+            const hasReadyAttachments = attachments.some(att => att.status === 'ready' && att.upload);
+            const hasUploadingAttachments = attachments.some(att => att.status === 'uploading');
+            if (sendButton) {
+                sendButton.disabled = isLoading || hasUploadingAttachments || (!hasText && !hasReadyAttachments);
+            }
+        }
+
+        function renderAssistantContent(message) {
+            const rendered = formatMessage(message);
+            return `<div class="assistant-body">${rendered}</div>`;
+        }
+
+        function addMessage(content, sender) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = sender === 'user' ? 'flex flex-col items-end gap-2' : 'flex flex-col items-start gap-2';
+
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble animate-fade-in ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+            if (body.classList.contains('coder-mode')) {
+                bubble.classList.add('coder-message-bubble');
+                if (sender === 'user') {
+                    bubble.classList.add('user-message');
+                }
+            }
+
+            bubble.innerHTML = sender === 'assistant' ? renderAssistantContent(content) : escapeHtml(content);
+
+            const timestamp = document.createElement('span');
+            timestamp.className = 'text-xs text-gray-500';
+            timestamp.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            messageWrapper.appendChild(bubble);
+            messageWrapper.appendChild(timestamp);
+            if (chatMessages) {
+                chatMessages.appendChild(messageWrapper);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            recordActivity(sender === 'user' ? 'Usuário' : 'CodeR');
+            ensureThinkingMessagePosition();
+            return messageWrapper;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatMessage(message) {
+            if (!message) return '';
+
+            if (typeof window.renderMarkdown === 'function') {
+                return window.renderMarkdown(message);
+            }
+
+            if (window.marked) {
+                try {
+                    const rendered = window.marked.parse(message);
+                    if (window.DOMPurify) {
+                        return window.DOMPurify.sanitize(rendered);
+                    }
+                    return rendered;
+                } catch (error) {
+                    console.warn('Falha ao renderizar markdown, usando fallback simples.', error);
+                }
+            }
+
+            return escapeHtml(message).replace(/\n/g, '<br>');
+        }
+
+        function addThinkingMessage() {
+            removeThinkingMessage();
+            const wrapper = document.createElement('div');
+            wrapper.id = 'thinking-message';
+            wrapper.className = 'flex flex-col items-start gap-2';
+            wrapper.innerHTML = `
+                <div class="message-bubble ai-message processing-bubble animate-fade-in">
+                    <div class="processing-indicator">
+                        <div class="processing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-sm">CodeR está trabalhando</p>
+                            <p class="text-xs text-gray-400" id="thinking-text">Analisando sua solicitação</p>
+                        </div>
+                    </div>
+                </div>`;
+            if (chatMessages) {
+                chatMessages.appendChild(wrapper);
+                ensureThinkingMessagePosition();
+            }
+            return wrapper.id;
+        }
+
+        function updateThinkingMessage(text) {
+            const textEl = document.getElementById('thinking-text');
+            if (textEl && text) {
+                textEl.textContent = text;
+            }
+            ensureThinkingMessagePosition();
+        }
+
+        function removeThinkingMessage() {
+            const thinking = document.getElementById('thinking-message');
+            if (thinking) thinking.remove();
+        }
+
+        function ensureThinkingMessagePosition() {
+            const thinking = document.getElementById('thinking-message');
+            if (!thinking || !chatMessages) return;
+            if (chatMessages.lastElementChild !== thinking) {
+                chatMessages.appendChild(thinking);
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function buildInlineArtifactHtml(artifact) {
+            const safeTitle = escapeHtml(artifact.title || 'Artefato');
+            const safeType = escapeHtml((artifact.file_type || artifact.type || 'artefato').toString().replace('_', ' '));
+            const safeDescription = artifact.description ? escapeHtml(artifact.description) : '';
+            let viewerContent = '';
+
+            if (artifact.preview_url) {
+                const safeUrl = escapeHtml(artifact.preview_url);
+                viewerContent = `<iframe src="${safeUrl}" loading="lazy" referrerpolicy="no-referrer"></iframe>`;
+            } else if (artifact.content) {
+                const sanitizedContent = window.DOMPurify ? window.DOMPurify.sanitize(artifact.content) : escapeHtml(artifact.content);
+                viewerContent = `<div class="assistant-artifact-html">${sanitizedContent}</div>`;
+            } else {
+                viewerContent = '<div class="assistant-artifact-html">Artefato disponível para download.</div>';
+            }
+
+            const fullscreenButton = artifact.filename ? `
+                <button type="button" class="assistant-artifact-button assistant-artifact-fullscreen" data-filename="${escapeHtml(artifact.filename)}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M3 9V5a2 2 0 0 1 2-2h4"/><polyline points="16 8 8 16"/><polyline points="16 16 8 16 8 8"/></svg>
+                    <span>Ver em tela cheia</span>
+                </button>` : '';
+
+            return `
+                <div class="assistant-artifact animate-fade-in" data-artifact="${escapeHtml((artifact.filename || artifact.title || Date.now()).toString())}">
+                    <div class="assistant-artifact-header">
+                        <div class="assistant-artifact-meta">
+                            <div class="assistant-artifact-title">${safeTitle}</div>
+                            <span class="assistant-artifact-chip">${safeType}</span>
+                        </div>
+                        <div class="assistant-artifact-actions">
+                            <button type="button" class="assistant-artifact-button assistant-artifact-toggle" data-state="collapsed">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                <span class="assistant-artifact-toggle-label">Expandir</span>
+                            </button>
+                            ${fullscreenButton}
+                        </div>
+                    </div>
+                    <div class="assistant-artifact-body">
+                        ${safeDescription ? `<p class="assistant-artifact-description">${safeDescription}</p>` : ''}
+                        <div class="assistant-artifact-viewer collapsed">
+                            ${viewerContent}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initializeInlineArtifactCard(card, artifact) {
+            if (!card) return;
+            const toggleBtn = card.querySelector('.assistant-artifact-toggle');
+            const toggleLabel = toggleBtn?.querySelector('.assistant-artifact-toggle-label');
+            const viewer = card.querySelector('.assistant-artifact-viewer');
+
+            const updateToggleLabel = () => {
+                if (!toggleBtn || !toggleLabel) return;
+                const isExpanded = toggleBtn.dataset.state === 'expanded';
+                toggleLabel.textContent = isExpanded ? 'Recolher' : 'Expandir';
+            };
+
+            if (toggleBtn && viewer) {
+                updateToggleLabel();
+                toggleBtn.addEventListener('click', () => {
+                    const isCollapsed = toggleBtn.dataset.state !== 'expanded';
+                    toggleBtn.dataset.state = isCollapsed ? 'expanded' : 'collapsed';
+                    viewer.classList.toggle('expanded', isCollapsed);
+                    viewer.classList.toggle('collapsed', !isCollapsed);
+                    updateToggleLabel();
+                });
+            }
+
+            const fullscreenBtn = card.querySelector('.assistant-artifact-fullscreen');
+            if (fullscreenBtn && artifact.filename) {
+                fullscreenBtn.addEventListener('click', () => openArtifact(artifact.filename, artifact.title || artifact.filename));
+            }
+        }
+
+        function handleArtifacts(artifacts, messageWrapper = null) {
+            if (!artifacts || artifacts.length === 0) return;
+            artifacts.forEach(artifact => {
+                renderArtifactPanelItem(artifact);
+                recordActivity('Artefato gerado');
+
+                if (!messageWrapper) {
+                    return;
+                }
+
+                const bubble = messageWrapper.querySelector('.message-bubble');
+                if (!bubble) {
+                    return;
+                }
+
+                const artifactKey = artifact.filename || artifact.title;
+                if (!artifactKey || renderedArtifactEmbeds.has(artifactKey)) {
+                    return;
+                }
+
+                let embedMarkup = '';
+
+                if (artifact.preview_url) {
+                    embedMarkup = `\n\n#### ${artifact.title || 'Artefato'}\n<iframe class="artifact-embed" data-embed="${artifactKey}" src="${artifact.preview_url}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="true"></iframe>`;
+                } else if (artifact.content) {
+                    embedMarkup = `\n\n#### ${artifact.title || 'Artefato'}\n${artifact.content}`;
+                }
+
+                if (!embedMarkup) {
+                    return;
+                }
+
+                renderedArtifactEmbeds.add(artifactKey);
+                const bodyContainer = bubble.querySelector('.assistant-body') || bubble;
+                const inlineHtml = buildInlineArtifactHtml(artifact);
+                bodyContainer.insertAdjacentHTML('beforeend', inlineHtml);
+                const card = bodyContainer.lastElementChild;
+                if (card && card.classList.contains('assistant-artifact')) {
+                    initializeInlineArtifactCard(card, artifact);
+                }
+            });
+        }
+
+        async function sendMessage(event) {
+            event?.preventDefault();
+            const message = messageInput.value.trim();
+            const readyAttachments = attachments.filter(att => att.status === 'ready' && att.upload);
+            const hasMessage = message.length > 0;
+            const hasReadyAttachments = readyAttachments.length > 0;
+            const hasUploadingAttachments = attachments.some(att => att.status === 'uploading');
+
+            if (isLoading || (!hasMessage && !hasReadyAttachments)) return;
+
+            if (hasUploadingAttachments) {
+                updatePipelineStatus('Aguarde o término do upload dos arquivos');
+                return;
+            }
+
+            if (currentEventSource) {
+                currentEventSource.close();
+                currentEventSource = null;
+            }
+
+            isLoading = true;
+            updateSendButton();
+            if (welcomeMessage) welcomeMessage.classList.add('hidden');
+
+            const displayParts = [];
+            if (hasMessage) {
+                displayParts.push(message);
+            }
+            if (hasReadyAttachments) {
+                const attachmentNames = readyAttachments.map(att => att.upload.filename || att.displayName);
+                displayParts.push(`📎 Arquivos: ${attachmentNames.join(', ')}`);
+            }
+            addMessage(displayParts.join('\n\n'), 'user');
+            if (messageInput) messageInput.value = '';
+            if (messageInput) {
+                messageInput.style.height = 'auto';
+                messageInput.style.height = Math.min(messageInput.scrollHeight, 144) + 'px';
+            }
+
+
+            if (hasReadyAttachments) {
+                attachments = attachments.filter(att => att.status !== 'ready');
+                updateAttachmentPreview();
+            }
+            updateSendButton();
+
+            startTask('Analisando entrada do usuário');
+            addThinkingMessage();
+
+            try {
+                const payload = { message };
+                if (hasReadyAttachments) {
+                    payload.files = readyAttachments.map(att => att.upload);
+                }
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'text/event-stream'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok || !response.body) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                let assistantMessageWrapper = null;
+                let fullResponse = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+                        const payload = line.slice(6).trim();
+                        if (!payload) continue;
+
+                        let data;
+                        try {
+                            data = JSON.parse(payload);
+                        } catch (error) {
+                            console.warn('Erro ao parsear payload:', error);
+                            continue;
+                        }
+
+                        if (!data || typeof data !== 'object') continue;
+                        responseReceived = true;
+
+                        if (data.type === 'plan') {
+                            handlePlanEvent(data);
+                            continue;
+                        }
+
+                        if (
+                            data.type === 'plan_step_started' ||
+                            data.type === 'plan_step_retry' ||
+                            data.type === 'plan_step_completed' ||
+                            data.type === 'plan_step_failed'
+                        ) {
+                            handlePlanStepEvent(data);
+                            continue;
+                        }
+
+                        if (data.type === 'plan_completed') {
+                            handlePlanCompleted(data);
+                            continue;
+                        }
+
+                        if (data.type === 'thinking') {
+                            updateThinkingMessage(data.message || 'Processando...');
+                            updatePipelineStatus(data.message || 'Pipeline em execução...');
+                            recordActivity('Pipeline');
+                        } else if (data.type === 'response') {
+                            removeThinkingMessage();
+                            fullResponse = data.message || '';
+                            assistantMessageWrapper = addMessage(fullResponse, 'assistant');
+                            handleArtifacts(data.artifacts, assistantMessageWrapper);
+                            updatePipelineStatus('Resultado disponível');
+                        } else if (data.type === 'chunk') {
+                            fullResponse += data.message || '';
+                            if (!assistantMessageWrapper) {
+                                assistantMessageWrapper = addMessage('', 'assistant');
+                            }
+                            const bubble = assistantMessageWrapper.querySelector('.message-bubble');
+                            if (bubble) {
+                                const bodyContainer = bubble.querySelector('.assistant-body');
+                                if (bodyContainer) {
+                                    bodyContainer.innerHTML = formatMessage(fullResponse);
+                                } else {
+                                    bubble.innerHTML = renderAssistantContent(fullResponse);
+                                }
+                            }
+                        } else if (data.type === 'complete') {
+                            removeThinkingMessage();
+                            completeTask('Pronto para novas solicitações');
+                        } else if (data.type === 'error') {
+                            removeThinkingMessage();
+                            addMessage(data.message || 'Erro ao processar a solicitação.', 'assistant');
+                            completeTask('Erro ao processar solicitação');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro na comunicação com o servidor:', error);
+                removeThinkingMessage();
+                addMessage('Desculpe, houve um erro ao processar sua mensagem. Tente novamente.', 'assistant');
+                completeTask('Erro ao processar solicitação');
+            } finally {
+                isLoading = false;
+                updateSendButton();
+                if (taskInProgress) {
+                    completeTask('Pronto para novas solicitações');
+                }
+            }
+        }
+
+       function checkSystemStatus() {
+           fetch('/api/status')
+               .then(response => response.json())
+               .then(data => {
+                   if (data.status === 'online') {
+                       if (statusIndicatorEl) statusIndicatorEl.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500';
+                        if (statusTextEl) statusTextEl.textContent = 'Online';
+                       updatePipelineStatus('Pronto para iniciar');
+                   } else {
+                       if (statusIndicatorEl) statusIndicatorEl.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500';
+                        if (statusTextEl) statusTextEl.textContent = 'Offline';
+                        updatePipelineStatus('Offline');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao consultar status:', error);
+                    if (statusIndicatorEl) statusIndicatorEl.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500';
+                    if (statusTextEl) statusTextEl.textContent = 'Erro';
+                    updatePipelineStatus('Erro ao consultar status');
+                });
+        }
+
+        function openArtifact(filename, title) {
+            const modal = document.getElementById('artifact-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+
+            if (!modal || !modalTitle || !modalContent) return;
+
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div><p class="mt-2 text-gray-300">Carregando artefato...</p></div>';
+
+            modal.classList.add('active');
+            recordActivity('Visualizando artefato');
+
+            fetch(`/artifact/${filename}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Arquivo não encontrado');
+                    return response.text();
+                })
+                .then(html => {
+                    modalContent.innerHTML = html;
+                })
+                .catch(error => {
+                    modalContent.innerHTML = '<div class="text-center py-8 text-red-400">Erro ao carregar visualização</div>';
+                    console.error('Erro ao carregar artefato:', error);
+                });
+        }
+
+        function closeArtifactModal() {
+            const modal = document.getElementById('artifact-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function attachFile() {
+            if (!fileInput || isLoading) {
+                return;
+            }
+            fileInput.click();
+        }
+
+        function clearChat() {
+            if (confirm('Tem certeza que deseja limpar o chat?')) {
+                if (chatMessages) chatMessages.innerHTML = '';
+                if (welcomeMessage) welcomeMessage.classList.remove('hidden');
+                artifactRegistry.clear();
+                if (artifactListEl) artifactListEl.innerHTML = '';
+                if (artifactListEl) artifactListEl.appendChild(artifactEmptyEl);
+                if (artifactEmptyEl) artifactEmptyEl.style.display = '';
+                renderedArtifactEmbeds.clear();
+                taskBoards.clear();
+            }
+        }
+
+       if (clearArtifactsBtn) {
+           clearArtifactsBtn.addEventListener('click', () => {
+               artifactRegistry.clear();
+                updateArtifactEmptyState();
+                if (artifactListEl) {
+                    artifactListEl.innerHTML = '<div id="artifact-empty" class="artifact-empty text-xs">Nenhum artefato ainda. Solicite ao CodeR gerar relatórios, arquivos ou gráficos para visualizá-los aqui.</div>';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Inicializando CodeR Interface...');
+
+            updateSendButton();
+            updateArtifactEmptyState();
+            updateTasksCounter();
+            updatePipelineStatus('Pronto para iniciar');
+            recordActivity('Aguardando interação');
+            checkSystemStatus();
+            setInterval(checkSystemStatus, 60000);
+
+
+
+            const artifactModal = document.getElementById('artifact-modal');
+            if (artifactModal) {
+                artifactModal.addEventListener('click', (event) => {
+                    if (event.target === artifactModal) {
+                        closeArtifactModal();
+                    }
+                });
+            }
+
+            if (messageInput) {
+                messageInput.focus();
+            }
+
+            console.log('✅ CodeR Interface inicializada com sucesso');
+        });
+
+        // Handle file input
+        if (fileInput) {
+            fileInput.addEventListener('change', handleFileSelection);
+        }
+
+        if (messageInput) {
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 144) + 'px';
+            });
+        }
+
+        // Handle form submission
+        if (messageForm) {
+            messageForm.addEventListener('submit', sendMessage);
+        }
+    </script>
+</body>
+</html>

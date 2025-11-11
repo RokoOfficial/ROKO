@@ -1,0 +1,39 @@
+<!-- Header Mobile-First Component -->
+<header class="glass-effect sticky top-0 z-40 border-b border-white/20 px-4 sm:px-6">
+    <div class="flex items-center justify-between h-14 sm:h-16">
+        <!-- Logo e Status -->
+        <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2">
+                <a href="https://ibb.co/Gf1KgMst" target="_blank" rel="noopener noreferrer" class="block w-10 h-10">
+                    <img src="https://i.ibb.co/LDqL4gQJ/1757372209487.png" alt="Logo CodeR" class="w-full h-full object-contain" />
+                </a>
+                <h1 class="text-lg sm:text-xl font-bold text-white">CodeR</h1>
+            </div>
+            <div class="flex items-center">
+                <div id="status-indicator" class="status-dot status-loading"></div>
+                <span id="status-text" class="text-xs sm:text-sm text-gray-300">Conectando...</span>
+            </div>
+        </div>
+
+        <!-- Actions Mobile-First -->
+        <div class="flex items-center space-x-2">
+            <button onclick="clearChat()" class="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Limpar chat">
+                <!-- Ícone Trash (Tailwind) -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+            </button>
+            <button onclick="logout()" class="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Sair">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
+                </svg>
+            </button>
+            <button onclick="showUserMenu()" class="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Menu">
+                <!-- Ícone User (Tailwind) -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>

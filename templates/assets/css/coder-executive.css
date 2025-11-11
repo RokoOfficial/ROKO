@@ -1,0 +1,239 @@
+
+<line_number>1</line_number>
+/* CODER Executive Interface Styles */
+
+.coder-executive-mode {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.execution-terminal {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    border: 1px solid rgba(0, 255, 128, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    box-shadow: 0 4px 20px rgba(0, 255, 128, 0.1);
+    overflow: hidden;
+}
+
+.execution-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.execution-status {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.running {
+    background: #00ff80;
+}
+
+.status-indicator.completed {
+    background: #00bfff;
+    animation: none;
+}
+
+.status-indicator.error {
+    background: #ff4444;
+    animation: none;
+}
+
+.command-sequence {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.command-step {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    border-left: 3px solid #444;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.command-step.active {
+    border-left-color: #00ff80;
+    background: rgba(0, 255, 128, 0.05);
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+.command-step.completed {
+    border-left-color: #00bfff;
+    background: rgba(0, 191, 255, 0.05);
+    opacity: 0.8;
+}
+
+.command-step.error {
+    border-left-color: #ff4444;
+    background: rgba(255, 68, 68, 0.05);
+    opacity: 1;
+}
+
+.step-number {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    line-height: 20px;
+    margin-right: 0.5rem;
+    font-weight: bold;
+}
+
+.command-step.active .step-number {
+    background: #00ff80;
+    color: #000;
+}
+
+.command-step.completed .step-number {
+    background: #00bfff;
+    color: #000;
+}
+
+.command-step.error .step-number {
+    background: #ff4444;
+    color: #fff;
+}
+
+.command-name {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.command-args {
+    color: #888;
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+}
+
+.command-description {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+.execution-result {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #ccc;
+}
+
+.typing-indicator {
+    display: inline-block;
+    width: 3px;
+    height: 1rem;
+    background: #00ff80;
+    animation: blink 1s infinite;
+    margin-left: 2px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Code blocks melhorados */
+.code-block-container {
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+}
+
+.code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-lang {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.copy-code-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.copy-code-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.code-block {
+    padding: 1rem;
+    background: transparent;
+    color: #e6edf3;
+    overflow-x: auto;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.inline-code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    color: #00ff80;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .execution-terminal {
+        padding: 0.75rem;
+    }
+    
+    .command-step {
+        padding: 0.5rem;
+    }
+    
+    .code-block {
+        font-size: 0.8rem;
+    }
+}

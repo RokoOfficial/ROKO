@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeR Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="/templates/assets/css/hmp-styles.css" rel="stylesheet">
+    <link href="/templates/assets/css/coder-executive.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #161616 100%);
+            color: #f8f9fa;
+            scrollbar-width: thin;
+            scrollbar-color: #495057 #212529;
+            overscroll-behavior-y: contain;
+            margin: 0;
+            padding: 0;
+        }
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #4a4a4a;
+            border-radius: 20px;
+            border: 3px solid #2a2a2a;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        .bottom-bar {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .input-area {
+            background: linear-gradient(135deg, #161b22 0%, #21262d 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+        }
+        #sideMenu {
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #projectList {
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(100vh - 200px);
+            scrollbar-width: thin;
+            scrollbar-color: #4a4a4a #2c2d30;
+        }
+
+        #projectList::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #projectList::-webkit-scrollbar-track {
+            background: #2c2d30;
+        }
+
+        #projectList::-webkit-scrollbar-thumb {
+            background-color: #4a4a4a;
+            border-radius: 3px;
+        }
+
+        /* Scroll nas subpastas */
+        #projectList ul {
+            overflow-y: auto;
+            max-height: 300px;
+            scrollbar-width: thin;
+            scrollbar-color: #4a4a4a #1a1a1a;
+        }
+
+        #projectList ul::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #projectList ul::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 2px;
+        }
+
+        #projectList ul::-webkit-scrollbar-thumb {
+            background-color: #4a4a4a;
+            border-radius: 2px;
+        }
+
+        #projectList ul::-webkit-scrollbar-thumb:hover {
+            background-color: #5a5a5a;
+        }
+
+        /* Melhorar visual das subpastas com scroll */
+        #projectList li[data-type="folder"] ul {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            padding: 4px 0;
+            margin: 4px 0;
+            border-left: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Animação suave para abertura das subpastas */
+        #projectList ul {
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+        }
+
+        #projectList ul.hidden-initial {
+            max-height: 0 !important;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        /* Indicador visual quando há scroll disponível */
+        #projectList ul::-webkit-scrollbar-track {
+            background: linear-gradient(to bottom, #1a1a1a, #2a2a2a);
+        }4a4a4a;
+            border-radius: 10px;
+        }
+
+        #projectList::-webkit-scrollbar-thumb:hover {
+            background-color: #606060;
+        }
+        .message-box {
+            background: linear-gradient(135deg, #161b22 0%, #21262d 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            max-width: 85%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .ai-message {
+            background: linear-gradient(135deg, #161b22 0%, #21262d 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            max-width: 85%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            color: #f8f9fa;
+        }
+        .user-message {
+            background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            max-width: 85%;
+            box-shadow: 0 8px 32px rgba(9, 105, 218, 0.3);
+        }
+        .coder-mode .coder-header {
+            background-color: #1a1a1a;
+        }
+        .coder-mode .coder-header-text {
+            color: #E3E3E3;
+        }
+        .coder-mode .coder-input-area {
+            background-color: #1a1a1a;
+            border: 1px solid #E3E3E3;
+        }
+        .coder-mode .coder-button {
+            background-color: #E3E3E3;
+            color: #1a1a1a;
+        }
+        .coder-mode .coder-message-bubble {
+            background-color: #2d2d2d;
+            color: #E3E3E3;
+        }
+        .coder-mode .coder-message-bubble.user-message {
+            background-color: #1a1a1a;
+            color: #E3E3E3;
+        }
+        .coder-mode .coder-message-bubble.ai-message {
+            background-color: #2d2d2d;
+            color: #E3E3E3;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 40;
+        }
+        .modal-content {
+            background-color: #2c2d30;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 400px;
+        }
+        .project-list li {
+            position: relative;
+            user-select: none;
+        }
+        .project-list li .toggle-arrow {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            transition: transform 0.2s ease-in-out;
+        }
+        .project-list li.expanded > .main-content > .toggle-arrow {
+            transform: translateY(-50%) rotate(90deg);
+        }
+        .project-list ul {
+            padding-left: 1.5rem;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .project-list li.expanded > ul {
+            max-height: 500px;
+        }
+        .project-list ul.hidden-initial {
+            max-height: 0 !important;
+        }
+        .context-menu {
+            position: fixed;
+            background-color: #2c2d30;
+            border: 1px solid #4a4a4a;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            z-index: 50;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .context-menu button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-align: left;
+            transition: background-color 0.2s;
+        }
+        .context-menu button:hover {
+            background-color: #3b3b3e;
+        }
+        .context-menu button:active {
+            background-color: #4a4a4e;
+        }
+        #tabContainer {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            min-height: 48px !important;
+            max-height: 48px !important;
+            width: 100% !important;
+            padding: 0 8px !important;
+            box-sizing: border-box !important;
+        }
+        .tab {
+            display: flex !important;
+            align-items: center !important;
+            padding: 0.5rem 1rem !important;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            background: transparent;
+            border-radius: 8px 8px 0 0;
+            margin-right: 4px !important;
+            font-weight: 500;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+            min-width: fit-content !important;
+            max-width: 200px !important;
+            height: 44px !important;
+            box-sizing: border-box !important;
+        }
+        .tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(128, 128, 128, 0.1));
+            border-radius: 8px 8px 0 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .tab:hover::before {
+            opacity: 1;
+        }
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+        }
+        .tab.active {
+            background: linear-gradient(135deg, #404040, #606060);
+            border-bottom-color: #ffffff;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+        }
+        .tab.pinned {
+            background: linear-gradient(135deg, #2a2a2a, #404040);
+            border-left: 3px solid #ffffff;
+            border-bottom-color: #ffffff;
+            position: relative;
+        }
+
+        .tab.pinned::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 4px;
+            height: 4px;
+            background: #ffffff;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        .tab.pinned .pin-btn {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+        }
+        .tab.pinned::after {
+            content: '📌';
+            margin-left: 4px;
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        .tab.active::before {
+            opacity: 0;
+        }
+        .tab-close-btn {
+            margin-left: 0.5rem;
+            color: #9ca3af;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        .tab-close-btn:hover {
+            color: #e5e7eb;
+        }
+
+        .modified-indicator {
+            color: #fbbf24;
+            font-size: 16px;
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+        .tab[data-modified="true"] {
+            font-style: italic;
+            border-bottom-color: #fbbf24;
+        }
+        #editorContainer {
+            flex-grow: 1;
+            position: relative;
+        }
+        .editor-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .editor-frame.hidden {
+            display: none;
+        }
+        .icon-html { color: #E44D26; }
+        .icon-css { color: #264DE4; }
+        .icon-js { color: #F7DF1E; }
+        .icon-ts { color: #3178C6; }
+        .icon-py { color: #3776AB; }
+        .icon-md { color: #E3E3E3; }
+        .icon-json { color: #E3E3E3; }
+        .icon-react { color: #61DAFB; }
+        .icon-angular { color: #DD0031; }
+        .icon-java { color: #5382A1; }
+        .icon-cpp { color: #00599C; }
+        .icon-csharp { color: #9A58B0; }
+        .icon-folder { color: #F8D676; }
+        .icon-file { color: #8C8C8C; }
+        @media (max-width: 640px) {
+            #headerTitleContainer {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            #headerTitle {
+                font-size: 1.25rem;
+            }
+            .header-buttons {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .p-4 {
+                padding: 1rem;
+            }
+        }
+        .animate-pop:active {
+            transform: scale(0.95);
+            transition: transform 0.1s ease-out;
+        }
+        .animate-pop-folder:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease-out;
+        }
+        .animate-folder-toggle.expanded > .main-content .toggle-arrow {
+            transform: translateY(-50%) rotate(90deg);
+        }
+        .animate-folder-toggle .toggle-arrow {
+            transition: transform 0.2s ease-in-out;
+        }
+        .pop-button {
+            transform: scale(1);
+            transition: transform 0.2s ease-out;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .pop-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .pop-button:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        /* Enhanced Touch Feedback Animations */
+        .clicking-folder {
+            background-color: #3b82f6 !important;
+            transform: scale(0.98);
+            transition: all 0.2s ease-out;
+        }
+
+        .clicking-folder .icon-folder {
+            color: #fbbf24 !important;
+            transform: scale(1.1);
+            transition: all 0.2s ease-out;
+        }
+
+        .clicking-file {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            transform: scale(0.96);
+            transition: all 0.3s ease-out;
+            color: white !important;
+        }
+
+        .clicking-file i {
+            transform: scale(1.15);
+            filter: brightness(1.3);
+            transition: all 0.3s ease-out;
+            color: white !important;
+        }
+
+        .clicking-file span {
+            color: white !important;
+        }
+
+        /* Better hover states for differentiation */
+        .project-list li[data-type="folder"]:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(128, 128, 128, 0.1));
+            border-left: 3px solid #888888;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+        }
+
+        .project-list li[data-type="file"]:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(192, 192, 192, 0.1));
+            border-left: 3px solid #cccccc;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.08);
+        }
+
+        /* Smooth transitions for all interactive elements */
+        .project-list li {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Enhanced tab close button */
+        .tab-close-btn {
+            color: rgba(156, 163, 175, 0.7) !important;
+            background: none !important;
+            border: none !important;
+            cursor: pointer !important;
+            padding: 4px !important;
+            border-radius: 4px !important;
+            transition: all 0.2s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 18px !important;
+            min-height: 18px !important;
+            position: relative !important;
+            z-index: 10 !important;
+        }
+
+        .tab-close-btn:hover {
+            color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.15) !important;
+            transform: scale(1.1) !important;
+        }
+
+        .tab-close-btn:active {
+            transform: scale(0.95) !important;
+            background: rgba(239, 68, 68, 0.25) !important;
+        }
+
+        .tab-close-btn i {
+            pointer-events: none !important;
+            font-size: 10px !important;
+        }
+
+        /* Pinned tabs enhanced protection and visual feedback */
+        .tab.pinned .tab-close-btn {
+            color: rgba(239, 68, 68, 0.8) !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
+
+        .tab.pinned .tab-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2) !important;
+            color: #ef4444 !important;
+        }
+
+        /* Shake animation for protected tabs */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            10% { transform: translateX(-5px) rotate(-2deg); }
+            20% { transform: translateX(5px) rotate(2deg); }
+            30% { transform: translateX(-5px) rotate(-2deg); }
+            40% { transform: translateX(5px) rotate(2deg); }
+            50% { transform: translateX(-2px) rotate(-1deg); }
+            60% { transform: translateX(2px) rotate(1deg); }
+            70% { transform: translateX(-2px) rotate(-1deg); }
+            80% { transform: translateX(2px) rotate(1deg); }
+            90% { transform: translateX(-1px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Enhanced pinned tab indicator */
+        .tab.pinned {
+            background: linear-gradient(135deg, #2a2a2a, #404040) !important;
+            border-left: 4px solid #ffffff !important;
+            border-bottom-color: #ffffff !important;
+            position: relative;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .tab.pinned::before {
+            content: '📌';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 8px;
+            opacity: 0.9;
+            z-index: 1;
+        }
+
+        /* Prevent text selection during clicks */
+        .project-list li {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        /* Artifact Cards Enhanced Styling */
+        .artifact-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .artifact-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        /* Modal Styling */
+        #artifact-viewer-modal {
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        #artifact-viewer-modal .bg-gray-900 {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        /* Button Hover Effects */
+        .artifact-card button {
+            transition: all 0.2s ease;
+        }
+
+        .artifact-card button:hover {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Iframe Loading Animation */
+        #iframe-loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Folder specific styling */
+        .project-list li[data-type="folder"] .main-content {
+            position: relative;
+        }
+
+        .project-list li[data-type="folder"] .main-content::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #6b7280;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .project-list li[data-type="folder"].expanded .main-content::after {
+            background: #3b82f6;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden coder-mode">
+    <!-- Side Menu -->
+    <div id="sideMenu" class="fixed inset-y-0 left-0 w-64 bg-[#2c2d30] z-30 p-4 transform -translate-x-full rounded-tr-xl rounded-br-xl">
+        <div class="flex-shrink-0">
+            <h2 class="text-xl font-bold mb-4">My Projects</h2>
+            <button id="addProjectBtn" class="w-full bg-blue-600 text-white p-2 rounded-full mb-4 flex items-center justify-center hover:bg-blue-700 active:bg-blue-800 transition-colors pop-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-plus"><path d="M19 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h4"/><path d="M12 10v6"/><path d="M9 13h6"/></svg>
+                <span class="ml-2">New Project</span>
+            </button>
+        </div>
+
+        <ul id="projectList" class="space-y-2 project-list flex-1">
+            <!-- Project items will be added here dynamically -->
+        </ul>
+
+        <!-- Logout Button -->
+        <div class="flex-shrink-0 mt-6 pt-4 border-t border-gray-600">
+            <button onclick="logout()" class="w-full bg-red-600 text-white p-2 rounded-full flex items-center justify-center hover:bg-red-700 active:bg-red-800 transition-colors pop-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span class="ml-2">Logout</span>
+            </button>
+        </div>
+    </div>
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black opacity-50 z-20 hidden"></div>
+
+    <!-- Header -->
+    <header id="chatHeader" class="p-2 flex justify-between items-center z-10 coder-header">
+        <button id="menuToggle" class="text-white p-2 rounded-lg hover:bg-gray-700/50 active:bg-gray-700/70 transition-colors pop-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <div id="headerTitle" class="text-xl font-medium">
+            <span class="text-white">CodeR</span>
+        </div>
+        <div class="w-10"></div> <!-- Spacer for centering -->
+    </header>
+
+    <!-- Content Area: Tabs or Chat -->
+    <div id="tabContainer" class="w-full flex-shrink-0 flex items-center overflow-x-auto hidden">
+        <!-- Tabs will be dynamically added here -->
+    </div>
+
+    <main class="main-content flex flex-col flex-grow">
+        <div id="mainContentContainer" class="flex-grow flex flex-col">
+            <!-- Main Chat Content -->
+            <div id="chatContent" class="flex-grow flex flex-col">
+                <div id="chatMessages" class="w-full max-w-4xl mx-auto px-4 py-4 flex flex-col flex-grow overflow-y-auto">
+                    <div id="welcomeMessage" class="flex flex-col items-center text-center py-8">
+                        <h1 class="text-4xl md:text-5xl font-medium text-white mb-4">
+                            Olá! Vamos começar
+                        </h1>
+                        <p class="text-gray-400 text-lg">
+                            Sou o CodeR. Como posso ajudá-lo hoje?
+                        </p>
+                    </div>
+                </div>
+                <!-- Upload notification area -->
+                <div id="uploadNotifications" class="upload-notifications hidden">
+                    <div class="notification-content">
+                        <div class="notification-icon">📎</div>
+                        <div class="notification-text">
+                            <div class="notification-title">Processing files...</div>
+                            <div class="notification-subtitle">Analyzing and preparing data</div>
+                        </div>
+                        <div class="notification-progress">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Editor Content -->
+            <div id="editorContainer" class="flex-grow flex-shrink-0 hidden">
+                <!-- Iframes for opened files will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer with input area -->
+    <footer id="chatFooter" class="p-4 w-full flex-shrink-0 coder-header border-t border-gray-600/30">
+        <div class="max-w-4xl mx-auto">
+            <form id="messageForm" class="coder-input-area w-full rounded-2xl p-3 flex items-center gap-3">
+                <button type="button" onclick="attachFile()" class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50 active:bg-gray-700/70 transition-colors pop-button" title="Attach files">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49"></path>
+                    </svg>
+                </button>
+                <input type="text" id="messageInput" placeholder="Ask CodeR - supports any data type" class="bg-transparent w-full focus:outline-none text-gray-200 placeholder-gray-500 flex-grow text-base py-2" autocomplete="off">
+                <button type="submit" class="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-800 active:bg-gray-900 transition-colors pop-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </footer>
+
+    <!-- Modal for adding a new project or file -->
+    <div id="addProjectModal" class="modal-overlay hidden">
+        <div class="modal-content relative flex flex-col p-6 rounded-xl shadow-xl">
+            <button id="closeAddProjectModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-100 active:text-gray-300 transition-colors pop-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h2 id="modalTitle" class="text-2xl font-semibold mb-4 text-center">Create New Project</h2>
+            <input type="text" id="newProjectNameInput" placeholder="Item Name" class="bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            <button id="createProjectBtn" class="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 active:bg-blue-800 transition-colors pop-button">
+                Create
+            </button>
+        </div>
+    </div>
+
+    <!-- Context Menu for folders -->
+    <div id="contextMenu" class="context-menu hidden">
+        <button id="addFolderBtn" class="pop-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-plus mr-2"><path d="M19 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h4"/><path d="M12 10v6"/><path d="M9 13h6"/></svg>
+            <span>New Folder</span>
+        </button>
+        <button id="addFileBtn" class="pop-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2 mr-2"><path d="M4 19V5a2 2 0 0 1 2-2h5.5L20 7.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6"/><path d="M12 10v6"/></svg>
+            <span>New File</span>
+        </button>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div id="profileModal" class="modal-overlay hidden">
+        <div class="modal-content flex flex-col p-6 rounded-xl shadow-xl">
+            <div id="profileView">
+                <button id="closeProfileModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-100 active:text-gray-300 transition-colors pop-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+                <div class="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center font-bold text-4xl text-white mb-4 mx-auto">
+                    M
+                </div>
+                <h2 class="text-2xl font-semibold mb-1 text-center">User Profile</h2>
+                <p id="profileUserName" class="text-sm text-gray-400 mb-2 text-center">Username: CodeR User</p>
+                <p id="profileUserEmail" class="text-sm text-gray-400 mb-6 text-center">Email: N/A</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Função global de cópia para clipboard
+        window.copyToClipboard = function(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    console.log('Texto copiado para clipboard');
+                }).catch(err => {
+                    console.error('Erro ao copiar:', err);
+                });
+            } else {
+                // Fallback para navegadores antigos
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+        };
+    </script>
+    <script src="/static/js/markdown.js"></script>
+    <script src="/templates/assets/js/utils.js"></script>
+    <script src="/templates/assets/js/ui.js"></script>
+    <script src="/templates/assets/js/chat.js"></script>
+    <script src="/templates/assets/js/coder-executive.js"></script>
+    <script>
+        // Garantir que todos os scripts carregaram antes de inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 DOM carregado, verificando dependências...');
+
+            // Aguardar um pouco para garantir que todos os scripts carregaram
+            setTimeout(() => {
+                console.log('ChatManager status:', typeof window.ChatManager);
+                if (!window.ChatManager) {
+                    console.error('❌ ChatManager não carregado, tentando recarregar...');
+                    location.reload();
+                }
+            }, 500);
+        });
+    </script>
+    <script src="/templates/assets/js/main.js"></script>
+</body>
+</html>

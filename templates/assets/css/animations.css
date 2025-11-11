@@ -1,0 +1,159 @@
+/* MOMO Animations & Keyframes */
+
+/* Keyframes */
+@keyframes gradient {
+    0%, 100% {
+        background-size: 200% 200%;
+        background-position: left center;
+    }
+    50% {
+        background-size: 200% 200%;
+        background-position: right center;
+    }
+}
+
+@keyframes fadeIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes slideUp {
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(0%); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(-25%);
+        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+        transform: translateY(0);
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+}
+
+@keyframes typing {
+    0% { width: 0; }
+    100% { width: 100%; }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Animation Classes */
+.animate-gradient {
+    animation: gradient 15s ease infinite;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+.animate-bounce-subtle {
+    animation: bounce 2s infinite;
+}
+
+.animate-loading {
+    animation: spin 1s linear infinite;
+}
+
+/* Transition Utilities */
+.transition-colors {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: var(--duration-fast);
+}
+
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: var(--duration-normal);
+}
+
+.transition-transform {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: var(--duration-normal);
+}
+
+/* Hover Effects */
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Loading States */
+.loading-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+/* Focus States */
+.focus-ring:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.focus-ring-inset:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--color-primary);
+}

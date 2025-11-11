@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": 1755919739.1189053,
+    "context": "Inicialização ROKO",
+    "error_type": "AttributeError",
+    "error_message": "'NoneType' object has no attribute 'DataFrame'",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/runner/workspace/ROKO/Interface/web_interface.py\", line 28, in _initialize_roko\n    self.roko_system = ROKOPipeline()\n                       ^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/ROKO/Pipeline/roko_pipeline.py\", line 220, in __init__\n    from HMP.hmp_interpreter import HMPInterpreter\n  File \"/home/runner/workspace/ROKO/HMP/__init__.py\", line 10, in <module>\n    from .hmp_router import HMPRouter\n  File \"/home/runner/workspace/ROKO/HMP/hmp_router.py\", line 17, in <module>\n    from backup.autoflux_roko_unified import AutoFluxROKO\n  File \"/home/runner/workspace/ROKO/backup/autoflux_roko_unified.py\", line 374, in <module>\n    class ROKODataProcessor:\n  File \"/home/runner/workspace/ROKO/backup/autoflux_roko_unified.py\", line 412, in ROKODataProcessor\n    def process_polars_operation(batch: pl.DataFrame, operation: str, column: str = \"value\") -> pl.DataFrame:\n                                        ^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'DataFrame'\n",
+    "request_id": null
+  },
+  {
+    "timestamp": 1755919740.4882758,
+    "context": "Inicialização ROKO",
+    "error_type": "AttributeError",
+    "error_message": "'NoneType' object has no attribute 'DataFrame'",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/runner/workspace/ROKO/Interface/web_interface.py\", line 28, in _initialize_roko\n    self.roko_system = ROKOPipeline()\n                       ^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/ROKO/Pipeline/roko_pipeline.py\", line 220, in __init__\n    from HMP.hmp_interpreter import HMPInterpreter\n  File \"/home/runner/workspace/ROKO/HMP/__init__.py\", line 10, in <module>\n    from .hmp_router import HMPRouter\n  File \"/home/runner/workspace/ROKO/HMP/hmp_router.py\", line 17, in <module>\n    from backup.autoflux_roko_unified import AutoFluxROKO\n  File \"/home/runner/workspace/ROKO/backup/autoflux_roko_unified.py\", line 374, in <module>\n    class ROKODataProcessor:\n  File \"/home/runner/workspace/ROKO/backup/autoflux_roko_unified.py\", line 412, in ROKODataProcessor\n    def process_polars_operation(batch: pl.DataFrame, operation: str, column: str = \"value\") -> pl.DataFrame:\n                                        ^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'DataFrame'\n",
+    "request_id": null
+  },
+  {
+    "timestamp": 1755919846.2814586,
+    "context": "Inicialização ROKO",
+    "error_type": "IndentationError",
+    "error_message": "expected an indented block after 'try' statement on line 38 (autoflux_roko_unified.py, line 39)",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/runner/workspace/ROKO/Interface/web_interface.py\", line 28, in _initialize_roko\n    self.roko_system = ROKOPipeline()\n                       ^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/ROKO/Pipeline/roko_pipeline.py\", line 222, in __init__\n    from HMP.hmp_interpreter import HMPInterpreter\n  File \"/home/runner/workspace/ROKO/HMP/__init__.py\", line 10, in <module>\n    from .hmp_router import HMPRouter\n  File \"/home/runner/workspace/ROKO/HMP/hmp_router.py\", line 17, in <module>\n    from backup.autoflux_roko_unified import AutoFluxROKO\n  File \"/home/runner/workspace/ROKO/backup/autoflux_roko_unified.py\", line 39\n    import polars as pl\n    ^^^^^^\nIndentationError: expected an indented block after 'try' statement on line 38\n",
+    "request_id": null
+  },
+  {
+    "timestamp": 1755919848.8232043,
+    "context": "Inicialização ROKO",
+    "error_type": "IndentationError",
+    "error_message": "expected an indented block after 'try' statement on line 38 (autoflux_roko_unified.py, line 39)",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/runner/workspace/ROKO/Interface/web_interface.py\", line 28, in _initialize_roko\n    self.roko_system = ROKOPipeline()\n                       ^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/ROKO/Pipeline/roko_pipeline.py\", line 222, in __init__\n    from HMP.hmp_interpreter import HMPInterpreter\n  File \"/home/runner/workspace/ROKO/HMP/__init__.py\", line 10, in <module>\n    from .hmp_router import HMPRouter\n  File \"/home/runner/workspace/ROKO/HMP/hmp_router.py\", line 17, in <module>\n    from backup.autoflux_roko_unified import AutoFluxROKO\n  File \"/home/runner/workspace/ROKO/backup/autoflux_roko_unified.py\", line 39\n    import polars as pl\n    ^^^^^^\nIndentationError: expected an indented block after 'try' statement on line 38\n",
+    "request_id": null
+  },
+  {
+    "timestamp": 1755919850.212522,
+    "context": "Inicialização ROKO",
+    "error_type": "IndentationError",
+    "error_message": "expected an indented block after 'try' statement on line 38 (autoflux_roko_unified.py, line 39)",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/runner/workspace/ROKO/Interface/web_interface.py\", line 28, in _initialize_roko\n    self.roko_system = ROKOPipeline()\n                       ^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/ROKO/Pipeline/roko_pipeline.py\", line 222, in __init__\n    from HMP.hmp_interpreter import HMPInterpreter\n  File \"/home/runner/workspace/ROKO/HMP/__init__.py\", line 10, in <module>\n    from .hmp_router import HMPRouter\n  File \"/home/runner/workspace/ROKO/HMP/hmp_router.py\", line 17, in <module>\n    from backup.autoflux_roko_unified import AutoFluxROKO\n  File \"/home/runner/workspace/ROKO/backup/autoflux_roko_unified.py\", line 39\n    import polars as pl\n    ^^^^^^\nIndentationError: expected an indented block after 'try' statement on line 38\n",
+    "request_id": null
+  }
+]

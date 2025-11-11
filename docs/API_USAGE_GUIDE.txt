@@ -1,0 +1,520 @@
+
+# 🔌 GUIA PRÁTICO - API ROKO
+# Como realizar chamadas para a API do projeto ROKO
+
+## BASE URL
+https://seu-repl.replit.app/api
+
+## 🔐 AUTENTICAÇÃO (Opcional para alguns endpoints)
+
+### 1. Registro de usuário
+```bash
+curl -X POST https://seu-repl.replit.app/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "meuusuario",
+    "email": "email@exemplo.com",
+    "password": "minhasenha123"
+  }'
+```
+
+### 2. Login
+```bash
+curl -X POST https://seu-repl.replit.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "meuusuario",
+    "password": "minhasenha123"
+  }'
+```
+
+## 💬 CHAT/CONVERSAÇÃO
+
+### 1. Chat simples (CURL)
+```bash
+curl -X POST https://seu-repl.replit.app/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Olá ROKO, como você está?"
+  }'
+```
+
+### 2. Chat com arquivos (CURL)
+```bash
+curl -X POST https://seu-repl.replit.app/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Analise este código",
+    "files": [
+      {
+        "filename": "script.py",
+        "content": "print(\"Hello World\")",
+        "file_type": "code"
+      }
+    ]
+  }'
+```
+
+### 3. Chat com Python
+```python
+import requests
+import json
+
+url = "https://seu-repl.replit.app/api/chat"
+
+payload = {
+    "message": "Explique machine learning em termos simples",
+    "context": {
+        "preferences": {
+            "response_style": "detailed",
+            "include_sources": True
+        }
+    }
+}
+
+headers = {
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+
+if response.status_code == 200:
+    data = response.json()
+    print("Resposta ROKO:", data.get('response'))
+    print("Log de execução:", data.get('execution_log'))
+else:
+    print(f"Erro {response.status_code}: {response.text}")
+```
+
+### 4. Chat com JavaScript/Node.js
+```javascript
+const axios = require('axios');
+
+async function chatWithROKO(message) {
+    try {
+        const response = await axios.post('https://seu-repl.replit.app/api/chat', {
+            message: message,
+            context: {
+                preferences: {
+                    response_style: "brief"
+                }
+            }
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('Resposta ROKO:', response.data.response);
+        console.log('Metadados:', response.data.metadata);
+        
+        return response.data;
+    } catch (error) {
+        console.error('Erro na API:', error.response?.data || error.message);
+    }
+}
+
+// Uso
+chatWithROKO("Qual é a temperatura hoje?");
+```
+
+### 5. Chat com streaming (JavaScript - Frontend)
+```javascript
+async function chatStream(message) {
+    const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                try {
+                    const data = JSON.parse(line.slice(6));
+                    
+                    if (data.type === 'thinking') {
+                        console.log('💭 Pensando:', data.message);
+                    } else if (data.type === 'response') {
+                        console.log('📤 Resposta:', data.message);
+                    }
+                } catch (e) {
+                    // Ignore parsing errors
+                }
+            }
+        }
+    }
+}
+```
+
+## 🧠 MEMÓRIA
+
+### 1. Buscar na memória (CURL)
+```bash
+curl -X GET "https://seu-repl.replit.app/api/memory/search?query=python&limit=5&category=coding"
+```
+
+### 2. Buscar na memória (Python)
+```python
+import requests
+
+url = "https://seu-repl.replit.app/api/memory/search"
+params = {
+    "query": "machine learning",
+    "limit": 10,
+    "category": "research",
+    "min_importance": 7
+}
+
+response = requests.get(url, params=params)
+data = response.json()
+
+for result in data['results']:
+    print(f"Pergunta: {result['user_prompt']}")
+    print(f"Resposta: {result['agent_response'][:100]}...")
+    print(f"Relevância: {result['similarity_score']}")
+    print("-" * 50)
+```
+
+### 3. Estatísticas da memória
+```bash
+curl -X GET https://seu-repl.replit.app/api/memory/stats
+```
+
+### 4. Insights da memória
+```bash
+curl -X GET https://seu-repl.replit.app/api/memory/insights
+```
+
+## 🔧 SISTEMA
+
+### 1. Status do sistema (CURL)
+```bash
+curl -X GET https://seu-repl.replit.app/api/status
+```
+
+### 2. Health check (Python)
+```python
+import requests
+
+def check_roko_health():
+    try:
+        response = requests.get("https://seu-repl.replit.app/api/system/health")
+        health_data = response.json()
+        
+        print(f"Status: {health_data['status']}")
+        print(f"Componentes: {health_data['components']}")
+        print(f"Performance: {health_data['performance']}")
+        
+        return health_data['status'] == 'healthy'
+    except Exception as e:
+        print(f"Erro ao verificar saúde: {e}")
+        return False
+
+if check_roko_health():
+    print("✅ ROKO está funcionando normalmente")
+else:
+    print("❌ ROKO tem problemas")
+```
+
+### 3. Métricas detalhadas
+```bash
+curl -X GET https://seu-repl.replit.app/api/system/metrics
+```
+
+## 🤖 AGENTES
+
+### 1. Status dos agentes
+```bash
+curl -X GET https://seu-repl.replit.app/api/agents/status
+```
+
+### 2. Executar agente específico (Python)
+```python
+import requests
+
+def execute_web_agent(search_query):
+    url = "https://seu-repl.replit.app/api/agents/execute"
+    
+    payload = {
+        "agent": "web",
+        "task": "Buscar informações na web",
+        "parameters": {
+            "search_query": search_query,
+            "num_results": 5
+        }
+    }
+    
+    response = requests.post(url, json=payload)
+    return response.json()
+
+# Executar busca web
+result = execute_web_agent("inteligência artificial 2024")
+print(result)
+```
+
+## 📁 UPLOAD DE ARQUIVOS
+
+### 1. Upload com CURL
+```bash
+curl -X POST https://seu-repl.replit.app/api/upload \
+  -F "file=@caminho/para/arquivo.txt"
+```
+
+### 2. Upload com Python
+```python
+import requests
+
+def upload_file(file_path):
+    url = "https://seu-repl.replit.app/api/upload"
+    
+    with open(file_path, 'rb') as file:
+        files = {'file': file}
+        response = requests.post(url, files=files)
+    
+    return response.json()
+
+# Upload de arquivo
+result = upload_file("meu_arquivo.py")
+print(f"Upload: {result['success']}")
+print(f"Dados processados: {result['processed_data']}")
+```
+
+### 3. Upload com JavaScript (Frontend)
+```javascript
+function uploadFile(fileInput) {
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Upload realizado:', data);
+        
+        // Agora enviar para chat com o arquivo
+        return fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: "Analise este arquivo",
+                files: [data]
+            })
+        });
+    })
+    .then(response => response.json())
+    .then(chatData => {
+        console.log('Análise do arquivo:', chatData.response);
+    });
+}
+```
+
+## 🎨 ARTEFATOS
+
+### 1. Salvar artefato
+```bash
+curl -X POST https://seu-repl.replit.app/api/artifacts/save \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename": "minha_visualizacao.html",
+    "content": "<html><body><h1>Meu Dashboard</h1></body></html>",
+    "title": "Dashboard Personalizado",
+    "type": "dashboard"
+  }'
+```
+
+### 2. Listar artefatos
+```bash
+curl -X GET https://seu-repl.replit.app/api/artifacts/list
+```
+
+### 3. Acessar artefato
+```bash
+curl -X GET https://seu-repl.replit.app/artifact/minha_visualizacao.html
+```
+
+## 📊 EXEMPLOS PRÁTICOS
+
+### 1. Fluxo completo: Análise de dados
+```python
+import requests
+import json
+
+base_url = "https://seu-repl.replit.app/api"
+
+# 1. Verificar se sistema está funcionando
+health = requests.get(f"{base_url}/system/health").json()
+print(f"Sistema: {health['status']}")
+
+# 2. Enviar dados para análise
+chat_response = requests.post(f"{base_url}/chat", json={
+    "message": "Analise estes dados de vendas: [100, 150, 200, 175, 300]"
+}).json()
+
+print(f"Análise: {chat_response['response']}")
+
+# 3. Buscar análises similares na memória
+memory_search = requests.get(f"{base_url}/memory/search", params={
+    "query": "análise vendas",
+    "limit": 3
+}).json()
+
+print(f"Análises similares encontradas: {len(memory_search['results'])}")
+```
+
+### 2. Interação completa com autenticação
+```python
+import requests
+import json
+
+session = requests.Session()
+base_url = "https://seu-repl.replit.app/api"
+
+# 1. Registrar usuário
+register_data = {
+    "username": "analista_dados",
+    "email": "analista@empresa.com", 
+    "password": "senha_segura123"
+}
+
+register_response = session.post(f"{base_url}/auth/register", json=register_data)
+print(f"Registro: {register_response.json()}")
+
+# 2. Fazer login
+login_response = session.post(f"{base_url}/auth/login", json={
+    "username": "analista_dados",
+    "password": "senha_segura123"
+})
+print(f"Login: {login_response.json()}")
+
+# 3. Usar API autenticado
+chat_response = session.post(f"{base_url}/chat", json={
+    "message": "Crie um dashboard para monitorar KPIs de vendas"
+})
+
+print(f"Dashboard: {chat_response.json()['response']}")
+```
+
+## ⚠️ TRATAMENTO DE ERROS
+
+### Python com tratamento robusto
+```python
+import requests
+import time
+
+def safe_api_call(url, method='GET', **kwargs):
+    max_retries = 3
+    retry_delay = 1
+    
+    for attempt in range(max_retries):
+        try:
+            if method == 'GET':
+                response = requests.get(url, timeout=30, **kwargs)
+            elif method == 'POST':
+                response = requests.post(url, timeout=30, **kwargs)
+            
+            response.raise_for_status()
+            return response.json()
+            
+        except requests.exceptions.Timeout:
+            print(f"Timeout na tentativa {attempt + 1}")
+        except requests.exceptions.ConnectionError:
+            print(f"Erro de conexão na tentativa {attempt + 1}")
+        except requests.exceptions.HTTPError as e:
+            print(f"Erro HTTP {e.response.status_code}: {e.response.text}")
+            break
+        except Exception as e:
+            print(f"Erro inesperado: {e}")
+            
+        if attempt < max_retries - 1:
+            time.sleep(retry_delay * (2 ** attempt))
+    
+    return None
+
+# Uso seguro
+result = safe_api_call("https://seu-repl.replit.app/api/chat", 
+                      method='POST',
+                      json={"message": "Como está o tempo?"})
+
+if result:
+    print("Sucesso:", result['response'])
+else:
+    print("Falha na comunicação com a API")
+```
+
+## 🔧 CONFIGURAÇÃO LOCAL PARA DESENVOLVIMENTO
+
+### Python - Cliente ROKO personalizado
+```python
+class ROKOClient:
+    def __init__(self, base_url="https://seu-repl.replit.app/api"):
+        self.base_url = base_url
+        self.session = requests.Session()
+    
+    def chat(self, message, **kwargs):
+        """Envia mensagem para ROKO"""
+        payload = {"message": message, **kwargs}
+        response = self.session.post(f"{self.base_url}/chat", json=payload)
+        return response.json()
+    
+    def search_memory(self, query, **filters):
+        """Busca na memória cognitiva"""
+        params = {"query": query, **filters}
+        response = self.session.get(f"{self.base_url}/memory/search", params=params)
+        return response.json()
+    
+    def get_status(self):
+        """Verifica status do sistema"""
+        response = self.session.get(f"{self.base_url}/status")
+        return response.json()
+
+# Uso do cliente
+roko = ROKOClient()
+
+# Chat simples
+response = roko.chat("Explique quantum computing")
+print(response['response'])
+
+# Buscar histórico
+memories = roko.search_memory("quantum", limit=5)
+for memory in memories['results']:
+    print(f"- {memory['user_prompt']}")
+
+# Verificar saúde
+status = roko.get_status()
+print(f"ROKO está {status['status']}")
+```
+
+## 🚀 DICAS DE PERFORMANCE
+
+1. **Use parâmetros adequados**: Limite resultados com `limit` para consultas rápidas
+2. **Cache local**: Implemente cache para evitar chamadas repetitivas
+3. **Streaming**: Use endpoints de streaming para respostas longas
+4. **Batching**: Agrupe múltiplas perguntas em uma única chamada quando possível
+5. **Monitoring**: Monitore os endpoints `/api/system/health` e `/api/status`
+
+## 📝 CÓDIGOS DE STATUS HTTP
+
+- 200: Sucesso
+- 400: Requisição inválida (verifique JSON)
+- 401: Não autorizado (faça login)
+- 429: Muitas requisições (aguarde)
+- 500: Erro interno (tente novamente)
+- 503: Sistema indisponível (aguarde)
+
+Este guia cobre os principais casos de uso da API ROKO. Para funcionalidades específicas, consulte a documentação completa em `/docs/API_REFERENCE.md`.
